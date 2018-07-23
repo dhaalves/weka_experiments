@@ -8,6 +8,8 @@ import weka.core.converters.CSVSaver;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.NumericToNominal;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Helper {
+
 
     public static void removeInstancesWithAttrValue() {
 
@@ -32,9 +35,9 @@ public class Helper {
         saver.writeBatch();
     }
 
-    public static void csv2arff(Path ori, Path des) throws Exception {
+    public static void csv2arff(Path ori, Path des, Boolean hasHeader) throws Exception {
         CSVLoader loader = new CSVLoader();
-        loader.setNoHeaderRowPresent(true);
+        loader.setNoHeaderRowPresent(!hasHeader);
         loader.setSource(ori.toFile());
         Instances data = loader.getDataSet();
 
@@ -83,6 +86,19 @@ public class Helper {
         saver.setFile(Paths.get(folder.toString() + "/merged.arff").toFile());
         saver.writeBatch();
 
+    }
+
+    public static void main(String[] args) throws IOException {
+        String folder = "/mnt/sdb1/datasets/mammoset/exp5-2_aug";
+
+        Files.list(Paths.get(folder)).filter(Helper::isCsv).forEach(ori -> {
+            Path des = Paths.get(ori.getParent().toString() + File.separator + ori.getFileName().toString().replace("csv", "arff"));
+            try {
+                csv2arff(ori, des, true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
 }
